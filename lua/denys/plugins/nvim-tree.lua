@@ -4,7 +4,7 @@ return {
   config = function()
     local nvimtree = require("nvim-tree")
     local api = require("nvim-tree.api")
-
+    local keymap = vim.keymap
     -- Disable netrw (recommended)
     vim.g.loaded_netrw = 1
     vim.g.loaded_netrwPlugin = 1
@@ -16,29 +16,29 @@ return {
       end
 
       -- 📂 Navigation
-      vim.keymap.set("n", "<CR>", api.node.open.edit, opts("Open File or Folder"))
-      vim.keymap.set("n", "h", api.node.navigate.parent_close, opts("Close Folder"))
+      keymap.set("n", "<CR>", api.node.open.edit, opts("Open File or Folder"))
+      keymap.set("n", "h", api.node.navigate.parent_close, opts("Close Folder"))
 
       -- 🔼 Go up one directory
-      vim.keymap.set("n", "-", api.tree.change_root_to_parent, opts("Go Up One Directory"))
+      keymap.set("n", "-", api.tree.change_root_to_parent, opts("Go Up One Directory"))
 
       -- 🔽 Go down one folder (focus as new root)
-      vim.keymap.set("n", "<Tab>", api.tree.change_root_to_node, opts("Focus Folder as Root (Tab)"))
+      keymap.set("n", "<Tab>", api.tree.change_root_to_node, opts("Focus Folder as Root (Tab)"))
 
       -- 🗂️ File actions
-      vim.keymap.set("n", "R", api.tree.reload, opts("Refresh"))
-      vim.keymap.set("n", "a", api.fs.create, opts("Create File"))
-      vim.keymap.set("n", "d", api.fs.remove, opts("Delete"))
-      vim.keymap.set("n", "r", api.fs.rename, opts("Rename"))
-      vim.keymap.set("n", "y", api.fs.copy.node, opts("Copy"))
-      vim.keymap.set("n", "p", api.fs.paste, opts("Paste"))
+      keymap.set("n", "R", api.tree.reload, opts("Refresh"))
+      keymap.set("n", "a", api.fs.create, opts("Create File"))
+      keymap.set("n", "d", api.fs.remove, opts("Delete"))
+      keymap.set("n", "r", api.fs.rename, opts("Rename"))
+      keymap.set("n", "y", api.fs.copy.node, opts("Copy"))
+      keymap.set("n", "p", api.fs.paste, opts("Paste"))
     end
 
     -- Main setup
     nvimtree.setup({
       on_attach = on_attach,
       view = {
-        width = 36,
+        width = 48,
         relativenumber = true,
       },
       renderer = {
@@ -58,7 +58,7 @@ return {
       actions = {
         open_file = {
           window_picker = { enable = false },
-          quit_on_open = true,
+          quit_on_open = false,
         },
       },
       filters = {
@@ -83,16 +83,28 @@ return {
       end
     end, { desc = "Open or focus file explorer" })
 
-    keymap.set("n", "<leader>ex", "<cmd>NvimTreeToggle<CR>", { desc = "Toggle file explorer" })
+    keymap.set("n", "<leader>eo", function()
+      local api = require("nvim-tree.api")
+      if api.tree.is_visible() then
+        return
+      end
+      local cur_win = vim.api.nvim_get_current_win()
+      api.tree.open()
+      vim.api.nvim_set_current_win(cur_win)
+    end, { desc = "Open Nvim-Tree without focusing" })
+
+    keymap.set("n", "<leader>ex", "<cmd>NvimTreeToggle<CR>", { desc = "Close file explorer" })
+
     keymap.set("n", "<leader>ef", "<cmd>NvimTreeFindFileToggle<CR>", { desc = "Toggle file explorer on current file" })
-    keymap.set("n", "<leader>ec", "<cmd>NvimTreeCollapse<CR>", { desc = "Collapse file explorer" })
     keymap.set("n", "<leader>er", "<cmd>NvimTreeRefresh<CR>", { desc = "Refresh file explorer" })
 
     -- 🪟 Optional: open splits with tree open
     keymap.set("n", "sv", ":NvimTreeOpen<CR><C-w>v", { noremap = true, silent = true })
     keymap.set("n", "sh", ":NvimTreeOpen<CR><C-w>s", { noremap = true, silent = true })
   end,
-} -- return {
+}
+
+-- return {
 --   "nvim-tree/nvim-tree.lua",
 --   dependencies = "nvim-tree/nvim-web-devicons",
 --   config = function()

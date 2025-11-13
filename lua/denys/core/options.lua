@@ -13,7 +13,7 @@ opt.autoindent = true -- copy indent from current line when starting new one
 opt.scrolloff = 15 -- Keep 15 lines from bottom or top of cursor
 opt.sidescrolloff = 8 -- Keep 8 symbols from right or left when scrolling vertically
 
-opt.wrap = false
+opt.wrap = true
 
 -- search settings
 opt.ignorecase = true -- ignore case when searching
@@ -39,3 +39,9 @@ opt.splitbelow = true -- split horizontal window to the bottom
 
 -- turn off swapfile
 opt.swapfile = false
+
+-- tabs line
+opt.showtabline = 1
+
+-- turn spell check off
+opt.spell = false

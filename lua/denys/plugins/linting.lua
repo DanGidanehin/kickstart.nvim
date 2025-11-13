@@ -1,80 +1,3 @@
-return {
-  "mfussenegger/nvim-lint",
-  event = { "BufReadPre", "BufNewFile" },
-  config = function()
-    local lint = require("lint")
-
-    -- Get parser/stream from the builtin eslint_d (function or table), if available
-    local base = lint.linters.eslint_d
-    local ok, built = pcall(function()
-      if type(base) == "function" then
-        return base() -- some versions export a factory
-      end
-      return base -- table or nil
-    end)
-
-    local parser = (ok and built and built.parser) or require("lint.parser").from_eslint() -- fallback parser
-    local stream = (ok and built and built.stream) or "both"
-
-    -- Our robust custom linter that supports ESLint v9 flat config + global fallback
-    lint.linters.eslint_d_custom = {
-      cmd = "eslint_d",
-      stdin = true,
-      ignore_exitcode = true,
-      stream = stream,
-      parser = parser,
-      args = function()
-        local buf = vim.api.nvim_get_current_buf()
-        local fname = vim.api.nvim_buf_get_name(buf)
-        local dir = vim.fs.dirname(fname)
-
-        -- Prefer project flat config
-        local cfg = vim.fs.find({
-          "eslint.config.js",
-          "eslint.config.cjs",
-          "eslint.config.mjs",
-          "eslint.config.ts",
-        }, { upward = true, path = dir })[1]
-
-        local args = { "--stdin", "--stdin-filename", fname }
-        if not cfg then
-          -- Fall back to your global flat config
-          table.insert(args, "--config")
-          table.insert(args, vim.fn.expand(vim.env.ESLINT_CONFIG_PATH or "~/.config/eslint/eslint.config.mjs"))
-        end
-        return args
-      end,
-    }
-
-    -- Use ONLY our custom linter to avoid indexing the builtin function
-    lint.linters_by_ft = {
-      javascript = { "eslint_d_custom" },
-      typescript = { "eslint_d_custom" },
-      javascriptreact = { "eslint_d_custom" },
-      typescriptreact = { "eslint_d_custom" },
-      svelte = { "eslint_d_custom" },
-      python = { "pylint" },
-    }
-
-    -- Auto-lint
-    local grp = vim.api.nvim_create_augroup("lint", { clear = true })
-    local function try_linting()
-      local linters = lint.linters_by_ft[vim.bo.filetype]
-      if linters then
-        lint.try_lint(linters)
-      end
-    end
-
-    vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
-      group = grp,
-      callback = try_linting,
-    })
-
-    -- Manual trigger
-    vim.keymap.set("n", "<leader>l", try_linting, { desc = "Trigger linting for current file" })
-  end,
-}
-
 -- return {
 --   "mfussenegger/nvim-lint",
 --   event = { "BufReadPre", "BufNewFile" },
@@ -82,11 +5,6 @@ return {
 --     local lint = require("lint")
 --
 --     lint.linters_by_ft = {
---       javascript = { "eslint_d" },
---       typescript = { "eslint_d" },
---       javascriptreact = { "eslint_d" },
---       typescriptreact = { "eslint_d" },
---       svelte = { "eslint_d" },
 --       python = { "pylint" },
 --     }
 --
@@ -143,8 +61,71 @@ return {
 --       end,
 --     })
 --
---     vim.keymap.set("n", "<leader>l", function()
+--     keymap.set("n", "<leader>l", function()
 --       try_linting()
 --     end, { desc = "Trigger linting for current file" })
 --   end,
 -- }
+
+-- lua/denys/plugins/linting.lua
+return {
+  "mfussenegger/nvim-lint",
+  event = { "BufReadPre", "BufNewFile" },
+  config = function()
+    local lint = require("lint")
+
+    lint.linters_by_ft = {
+      -- C / C++
+      c = { "cpplint" },
+      cpp = { "cpplint" },
+      -- python
+      python = { "pylint" },
+      -- js / ts
+      javascript = { "eslint_d" },
+      typescript = { "eslint_d" },
+      javascriptreact = { "eslint_d" },
+      typescriptreact = { "eslint_d" },
+      -- rust
+      rust = { "clippy" },
+      -- sql
+      sql = { "sqlfluff" },
+      -- kotlin
+      kotlin = { "ktlint" },
+      -- css/html (optional)
+      css = { "stylelint" },
+
+      -- other existing
+      svelte = { "eslint_d" },
+    }
+
+    local lint_augroup = vim.api.nvim_create_augroup("lint", { clear = true })
+
+    -- NOTE: Custom helper functions kept for compatibility...
+    local function file_in_cwd(file_name)
+      return vim.fs.find(file_name, {
+        upward = true,
+        stop = vim.loop.cwd():match("(.+)/"),
+        path = vim.fs.dirname(vim.api.nvim_buf_get_name(0)),
+        type = "file",
+      })[1]
+    end
+
+    local function try_linting()
+      local linters = lint.linters_by_ft[vim.bo.filetype]
+      lint.try_lint(linters)
+    end
+
+    vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
+      group = lint_augroup,
+      callback = function()
+        try_linting()
+      end,
+    })
+
+    local keymap = vim.keymap
+
+    keymap.set("n", "<leader>l", function()
+      try_linting()
+    end, { desc = "Trigger linting for current file" })
+  end,
+}
