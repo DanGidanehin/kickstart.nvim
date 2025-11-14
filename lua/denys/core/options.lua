@@ -45,3 +45,7 @@ opt.showtabline = 1
 
 -- turn spell check off
 opt.spell = false
+
+-- Disable netrw (recommended when using nvim-tree or similar)
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
