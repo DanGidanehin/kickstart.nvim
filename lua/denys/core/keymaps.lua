@@ -13,11 +13,6 @@ keymap.set("n", "<leader>pa", 'ggVG"+p', { desc = "Paste clipboard over entire b
 -- Clear search highlights
 keymap.set("n", "<leader>nh", ":nohl<CR>", { desc = "Clear search highlights" })
 
--- Open Folder using Finder view
-keymap.set("n", "<leader>of", function()
-  require("denys.core.open-folder").open()
-end, { desc = "Open project folder in NvimTree" })
-
 -- Toggle File Wrap
 local function toggle_wrap()
   local was = vim.wo.wrap
