@@ -67,7 +67,8 @@ return {
       options = {
         theme = my_lualine_theme,
         section_separators = { left = " ", right = "" },
-        component_separators = { left = "❘", right = "" },
+        component_separators = { left = "❘", right = "❘" },
+        -- 
       },
       sections = {
         -- left
@@ -126,7 +127,7 @@ return {
           --   cond = lazy_status.has_updates,
           --   color = { fg = "#ff9e64" },
           -- },
-          { "filetype" },
+          -- { "filetype" },
           { "progress" },
         },
 
