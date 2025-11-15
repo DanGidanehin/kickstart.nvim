@@ -16,12 +16,11 @@ return {
       keymap.set("n", "<CR>", api.node.open.edit, opts("Open File or Folder"))
       keymap.set("n", "h", api.node.navigate.parent_close, opts("Close Folder"))
 
-      -- Go up one Folder
-      keymap.set("n", "-", api.tree.change_root_to_parent, opts("Go Up One Directory"))
-      -- Go down one Folder
-      keymap.set("n", "<Tab>", api.tree.change_root_to_node, opts("Focus Folder as Root (Tab)"))
+      -- Go up one folder
+      keymap.set("n", "<S-Tab>", api.tree.change_root_to_parent, opts("Go Up One Directory"))
+      -- Focus folder as new root
+      keymap.set("n", "<Tab>", api.tree.change_root_to_node, opts("Focus Folder as Root"))
 
-      -- Actions
       keymap.set("n", "R", api.tree.reload, opts("Refresh"))
       keymap.set("n", "a", api.fs.create, opts("Create File"))
       keymap.set("n", "d", api.fs.remove, opts("Delete"))
