@@ -81,7 +81,7 @@ return {
         },
       },
       sections = {
-        -- left
+        -- left: GitHub / Git
         lualine_a = {
           {
             function()
@@ -101,21 +101,41 @@ return {
               if head == "HEAD" then
                 local commit = vim.fn.systemlist({ "git", "-C", dir, "rev-parse", "--short", "HEAD" })[1]
                 if commit and commit ~= "" then
-                  return " " .. commit
+                  head = " " .. commit
+                end
+              elseif head and head ~= "" then
+                head = " " .. head
+              else
+                head = "󰊢 Git"
+              end
+
+              -- Git diff signs (from gitsigns)
+              local gitsigns = vim.b.gitsigns_status_dict
+              if gitsigns then
+                local added = gitsigns.added or 0
+                local changed = gitsigns.changed or 0
+                local removed = gitsigns.removed or 0
+                local diff_str = ""
+
+                if added > 0 then
+                  diff_str = diff_str .. " 󰐕 " .. added
+                end
+                if changed > 0 then
+                  diff_str = diff_str .. "  " .. changed
+                end
+                if removed > 0 then
+                  diff_str = diff_str .. "  " .. removed
+                end
+
+                if diff_str ~= "" then
+                  head = head .. diff_str
                 end
               end
 
-              -- Normal or fallback display
-              if head and head ~= "" and head ~= "HEAD" then
-                return " " .. head
-              else
-                return "󰊢 Git"
-              end
+              return head
             end,
           },
-        },
-
-        -- no diff / git here
+        }, -- no diff / git here
         lualine_b = {},
 
         -- center: path
@@ -130,13 +150,8 @@ return {
           },
         },
 
-        -- right side: updates -> filetype -> percentage
+        -- right side: filetype | percentage
         lualine_x = {
-          -- {
-          --   lazy_status.updates,
-          --   cond = lazy_status.has_updates,
-          --   color = { fg = "#ff9e64" },
-          -- },
           -- { "filetype" },
           { "progress" },
         },
