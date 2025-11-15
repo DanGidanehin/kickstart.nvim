@@ -69,6 +69,16 @@ return {
         section_separators = { left = " ", right = "" },
         component_separators = { left = "❘", right = "❘" },
         -- 
+        disabled_filetypes = {
+          statusline = {
+            "NvimTree", -- Exclude nvim-tree
+            "spectre_panel", -- Exclude spectre
+            "help", -- Good practice to exclude help files
+            "alpha", -- If you use a dashboard
+            "lazy",
+            "packer",
+          },
+        },
       },
       sections = {
         -- left
