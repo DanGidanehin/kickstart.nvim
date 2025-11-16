@@ -3,7 +3,7 @@ return {
   dependencies = { "nvim-tree/nvim-web-devicons" },
   config = function()
     local lualine = require("lualine")
-    local lazy_status = require("lazy.status")
+    -- local lazy_status = require("lazy.status")
 
     local colors = {
       blue = "#65D1FF",
@@ -77,6 +77,8 @@ return {
             "alpha", -- If you use a dashboard
             "lazy",
             "packer",
+            "trouble",
+            "Trouble",
           },
         },
       },
@@ -165,20 +167,3 @@ return {
     })
   end,
 }
-
---   no-repo
--- “Deleted branch” — simple and clear.
---   not-a-repo
--- Plain Git logo + hint text.
--- 󰊢  git-off
--- “No Git detected.”
---   detached
--- Like a detached HEAD state.
---   no-branch
--- Indicates a missing branch.
---   init-repo
--- Suggests: “maybe initialize a repo.”
--- 󰘬  repo-missing
---
---
--- -
