@@ -3,7 +3,11 @@ return {
   dependencies = { "nvim-lua/plenary.nvim" },
   config = function()
     local spectre = require("spectre")
-    local state = { win = -1, has_path = false }
+    local state = {
+      win = -1,
+      has_path = false,
+      prev_win = -1, -- remember where to return on <Esc>
+    }
 
     -- Create floating window for Spectre
     local function create_floating_window()
@@ -41,12 +45,15 @@ return {
       end
     end
 
+    -- Go back to window we had before opening Spectre
+    local function focus_previous_window()
+      if state.prev_win ~= -1 and vim.api.nvim_win_is_valid(state.prev_win) then
+        vim.api.nvim_set_current_win(state.prev_win)
+      end
+    end
+
     -- Setup Spectre with floating window
     spectre.setup({
-      default = {
-        find = { cmd = "rg" },
-        replace = { cmd = "sed" },
-      },
       open_cmd = create_floating_window,
       replace_vim_cmd = "edit_no_buffer_check",
     })
@@ -60,6 +67,9 @@ return {
 
     -- Open or focus Spectre
     local function open_or_focus()
+      -- remember where we were before jumping into Spectre
+      state.prev_win = vim.api.nvim_get_current_win()
+
       if state.win ~= -1 and vim.api.nvim_win_is_valid(state.win) then
         vim.api.nvim_set_current_win(state.win)
       else
@@ -97,13 +107,20 @@ return {
 
     -- Search in current file
     local function search_in_file()
+      -- also remember previous window when opening Spectre in file mode
+      state.prev_win = vim.api.nvim_get_current_win()
+
       local filepath = get_valid_file()
       close_spectre()
 
       if filepath then
+        local relative_path = vim.fn.fnamemodify(filepath, ":~:.")
+        if not relative_path:match("^/") then
+          relative_path = "/" .. relative_path
+        end
         spectre.open({
           select_word = false,
-          path = vim.fn.fnamemodify(filepath, ":~:."),
+          path = relative_path,
         })
         state.has_path = true
       else
@@ -116,25 +133,32 @@ return {
 
     -- Clear path (global search)
     local function clear_path()
+      -- same: remember where to return to
+      state.prev_win = vim.api.nvim_get_current_win()
+
       close_spectre()
       spectre.open({ select_word = false })
       state.has_path = false
       enter_insert()
     end
 
-    -- Close or switch to global search
-    local function smart_close()
-      if state.win ~= -1 and vim.api.nvim_win_is_valid(state.win) then
-        if state.has_path then
-          clear_path()
-        else
-          close_spectre()
-        end
-      end
-    end
+    -- When Spectre panel is opened, map <Esc> to "unfocus" back
+    vim.api.nvim_create_autocmd("FileType", {
+      pattern = "spectre_panel",
+      callback = function(args)
+        local buf = args.buf
+        -- From NORMAL mode: <Esc> → go back to the previous window
+        vim.keymap.set("n", "<esc>", function()
+          focus_previous_window()
+        end, { buffer = buf, nowait = true, silent = true, desc = "Focus previous window from Spectre" })
+        -- From INSERT you'll do: Esc (leave insert), Esc (this mapping)
+      end,
+    })
 
     -- Keymaps
-    vim.keymap.set("n", "<leader>sr", open_or_focus, { desc = "Open/focus Spectre" })
+    vim.keymap.set({ "n", "v", "i" }, "<C-f>", open_or_focus, {
+      desc = "Open/focus Spectre",
+    })
     vim.keymap.set("n", "<leader>sf", search_in_file, { desc = "Search in current file" })
     vim.keymap.set("n", "<leader>qf", clear_path, { desc = "Clear path (global search)" })
     vim.keymap.set("n", "<leader>qs", close_spectre, { desc = "Close Spectre" })

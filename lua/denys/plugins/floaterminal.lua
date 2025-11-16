@@ -112,8 +112,18 @@ end
 
 -- :Floaterminal command and keybindings
 vim.api.nvim_create_user_command("Floaterminal", open_or_focus_terminal, {})
-vim.keymap.set("n", "<C-n>", "<cmd>Floaterminal<cr>", { desc = "Open or focus floating terminal", silent = true })
-vim.keymap.set("n", "<C-x>", close_floating_window, { desc = "Close floating terminal window", silent = true })
+vim.keymap.set(
+  { "n", "v", "i" },
+  "<C-n>",
+  "<cmd>Floaterminal<cr>",
+  { desc = "Open or focus floating terminal", silent = true }
+)
+vim.keymap.set(
+  { "n", "v", "i" },
+  "<C-x>",
+  close_floating_window,
+  { desc = "Close floating terminal window", silent = true }
+)
 
 -- Valid empty spec for lazy.nvim
 return {}
