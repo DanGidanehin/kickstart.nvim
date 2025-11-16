@@ -6,12 +6,19 @@ local state = {
 -- Create (or reuse) a floating window for a given buffer
 local function create_floating_window(opts)
   opts = opts or {}
-  local width = opts.width or math.floor(vim.o.columns * 0.95)
-  local height = opts.height or math.floor(vim.o.lines * 0.33)
 
-  -- your custom positioning
-  local col = math.floor((vim.o.columns - width) / 2)
-  local row = vim.o.lines - height - math.floor((vim.o.columns - width) / 4)
+  local total_cols = vim.o.columns
+  local total_lines = vim.o.lines
+
+  local padding_for_width = 5
+  local padding = 4
+  local spectre_gap = 2
+
+  local width = (total_cols - padding_for_width * 2 - math.floor(total_cols * 0.30) - spectre_gap)
+  local height = opts.height or math.floor(total_lines * 0.30)
+
+  local col = padding
+  local row = total_lines - height + 2
 
   local buf
   if opts.buf and vim.api.nvim_buf_is_valid(opts.buf) then

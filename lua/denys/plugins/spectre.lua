@@ -7,10 +7,18 @@ return {
 
     -- Create floating window for Spectre
     local function create_floating_window()
-      local width = math.floor(vim.o.columns * 0.3)
-      local height = math.floor(vim.o.lines * 0.33)
-      local col = vim.o.columns - width
-      local row = vim.o.lines - height
+      local total_cols = vim.o.columns
+      local total_lines = vim.o.lines
+
+      local padding = 6
+
+      -- Spectre window size
+      local width = math.floor(total_cols * 0.30)
+      local height = math.floor(total_lines * 0.30)
+
+      -- Align right side using same padding
+      local col = total_cols - width - padding
+      local row = total_lines - height + 2
 
       local buf = vim.api.nvim_create_buf(false, true)
       state.win = vim.api.nvim_open_win(buf, true, {
