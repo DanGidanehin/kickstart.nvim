@@ -1,59 +1,137 @@
--- return {
---   "nvim-pack/nvim-spectre",
---   dependencies = { "nvim-lua/plenary.nvim" },
---   config = function()
---     local spectre = require("spectre")
---
---     spectre.setup({
---       default = {
---         find = { cmd = "rg" }, -- use ripgrep
---         replace = { cmd = "sed" }, -- use system sed
---       },
---     })
---
---     local map = vim.keymap
---     map.set("n", "<leader>sr", spectre.open, { desc = "Open Spectre panel" })
---     map.set("v", "<leader>sr", spectre.open_visual, { desc = "Search selection" })
---     map.set("n", "<leader>sf", spectre.open_file_search, { desc = "Search in current file" })
---     map.set("n", "<leader>ri", function()
---       spectre.change_options("ignore-case")
---     end, { desc = "Spectre: Toggle ignore case" })
---   end,
--- }
-
 return {
   "nvim-pack/nvim-spectre",
   dependencies = { "nvim-lua/plenary.nvim" },
   config = function()
     local spectre = require("spectre")
+    local state = { win = -1, has_path = false }
 
+    -- Create floating window for Spectre
+    local function create_floating_window()
+      local width = math.floor(vim.o.columns * 0.3)
+      local height = math.floor(vim.o.lines * 0.33)
+      local col = vim.o.columns - width
+      local row = vim.o.lines - height
+
+      local buf = vim.api.nvim_create_buf(false, true)
+      state.win = vim.api.nvim_open_win(buf, true, {
+        relative = "editor",
+        width = width,
+        height = height,
+        col = col,
+        row = row,
+        style = "minimal",
+        border = "rounded",
+      })
+    end
+
+    -- Close Spectre window
+    local function close_spectre()
+      if state.win ~= -1 and vim.api.nvim_win_is_valid(state.win) then
+        vim.api.nvim_win_close(state.win, true)
+        state.win = -1
+        state.has_path = false
+      end
+    end
+
+    -- Setup Spectre with floating window
     spectre.setup({
       default = {
         find = { cmd = "rg" },
         replace = { cmd = "sed" },
       },
-      ui = {
-        -- THIS IS THE KEY CHANGE:
-        -- 1. We use `vnew` (or `vsplit`) to create a vertical window.
-        -- 2. We prefix it with `right` to force the window to open on the far right.
-        -- 3. We use `noswapfile` to prevent creating unnecessary swap files for the Spectre buffer.
-        open_cmd = "right noswapfile vnew",
-
-        -- Keep this to fix the E37 error
-        result_enter_best_match = "edit_no_buffer_check",
-      },
+      open_cmd = create_floating_window,
+      replace_vim_cmd = "edit_no_buffer_check",
     })
 
-    local keymap = vim.keymap
+    -- Enter insert mode
+    local function enter_insert()
+      vim.schedule(function()
+        vim.cmd("startinsert")
+      end)
+    end
 
-    -- Using spectre.toggle to open/close
-    keymap.set("n", "<leader>sr", spectre.toggle, { desc = "Toggle Spectre panel (Far Right Split)" })
+    -- Open or focus Spectre
+    local function open_or_focus()
+      if state.win ~= -1 and vim.api.nvim_win_is_valid(state.win) then
+        vim.api.nvim_set_current_win(state.win)
+      else
+        spectre.open()
+        state.has_path = false
+        enter_insert()
+      end
+    end
 
-    -- Keep existing mappings
-    keymap.set("v", "<leader>sr", spectre.open_visual, { desc = "Search selection" })
-    keymap.set("n", "<leader>sf", spectre.open_file_search, { desc = "Search in current file" })
-    keymap.set("n", "<leader>ri", function()
+    -- Get valid file (not terminal or nvim-tree)
+    local function get_valid_file()
+      local wins = vim.api.nvim_list_wins()
+      for _, win in ipairs(wins) do
+        if win ~= state.win and vim.api.nvim_win_is_valid(win) then
+          local buf = vim.api.nvim_win_get_buf(win)
+          local buftype = vim.bo[buf].buftype
+          local filetype = vim.bo[buf].filetype
+          local bufname = vim.api.nvim_buf_get_name(buf)
+
+          if
+            buftype ~= "terminal"
+            and buftype ~= "nofile"
+            and filetype ~= "NvimTree"
+            and filetype ~= "spectre_panel"
+            and not bufname:match("NvimTree_")
+            and not bufname:match("term://")
+            and bufname ~= ""
+          then
+            return bufname
+          end
+        end
+      end
+      return nil
+    end
+
+    -- Search in current file
+    local function search_in_file()
+      local filepath = get_valid_file()
+      close_spectre()
+
+      if filepath then
+        spectre.open({
+          select_word = false,
+          path = vim.fn.fnamemodify(filepath, ":~:."),
+        })
+        state.has_path = true
+      else
+        spectre.open({ select_word = false })
+        state.has_path = false
+      end
+
+      enter_insert()
+    end
+
+    -- Clear path (global search)
+    local function clear_path()
+      close_spectre()
+      spectre.open({ select_word = false })
+      state.has_path = false
+      enter_insert()
+    end
+
+    -- Close or switch to global search
+    local function smart_close()
+      if state.win ~= -1 and vim.api.nvim_win_is_valid(state.win) then
+        if state.has_path then
+          clear_path()
+        else
+          close_spectre()
+        end
+      end
+    end
+
+    -- Keymaps
+    vim.keymap.set("n", "<leader>sr", open_or_focus, { desc = "Open/focus Spectre" })
+    vim.keymap.set("n", "<leader>sf", search_in_file, { desc = "Search in current file" })
+    vim.keymap.set("n", "<leader>qf", clear_path, { desc = "Clear path (global search)" })
+    vim.keymap.set("n", "<leader>qs", close_spectre, { desc = "Close Spectre" })
+    vim.keymap.set("n", "<leader>ic", function()
       spectre.change_options("ignore-case")
-    end, { desc = "Spectre: Toggle ignore case" })
+    end, { desc = "Toggle ignore case" })
   end,
 }
