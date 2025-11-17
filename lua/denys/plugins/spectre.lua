@@ -156,13 +156,13 @@ return {
     })
 
     -- Keymaps
-    vim.keymap.set({ "n", "v", "i" }, "<C-f>", open_or_focus, {
+    vim.keymap.set({ "n", "v", "i" }, "<C-s>", open_or_focus, {
       desc = "Open/focus Spectre",
     })
-    vim.keymap.set("n", "<leader>sf", search_in_file, { desc = "Search in current file" })
-    vim.keymap.set("n", "<leader>qf", clear_path, { desc = "Clear path (global search)" })
-    vim.keymap.set("n", "<leader>qs", close_spectre, { desc = "Close Spectre" })
-    vim.keymap.set("n", "<leader>ic", function()
+    vim.keymap.set({ "n", "v" }, "<leader>sf", search_in_file, { desc = "Search in current file" })
+    vim.keymap.set({ "n", "v" }, "<leader>qf", clear_path, { desc = "Clear path (global search)" })
+    vim.keymap.set({ "n", "v", "i" }, "<C-q>", close_spectre, { desc = "Close Spectre" })
+    vim.keymap.set({ "n", "v" }, "<leader>sc", function()
       spectre.change_options("ignore-case")
     end, { desc = "Toggle ignore case" })
   end,
