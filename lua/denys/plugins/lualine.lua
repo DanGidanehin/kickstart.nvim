@@ -58,7 +58,7 @@ return {
       local parts = vim.split(path, "/")
       local count = #parts
       -- keep last 3 segments (2 folders + filename)
-      local start = math.max(count - 2, 1)
+      local start = math.max(count - 0, 1)
       local short = table.concat(vim.list_slice(parts, start, count), "/")
       return short
     end
@@ -142,7 +142,8 @@ return {
 
         -- center: path
         lualine_c = {
-          { short_path, icon = "", separator = "" },
+          { short_path, icon = "", separator = "" },
+          -- 
           {
             "diagnostics",
             sources = { "nvim_diagnostic" },
