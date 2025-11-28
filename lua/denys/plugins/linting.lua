@@ -76,7 +76,6 @@ return {
 
     lint.linters_by_ft = {
       -- C / C++
-      c = { "cpplint" },
       cpp = { "cpplint" },
       -- python
       python = { "pylint" },

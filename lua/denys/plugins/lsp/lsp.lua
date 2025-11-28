@@ -1,23 +1,3 @@
--- return {
---   "hrsh7th/cmp-nvim-lsp",
---   event = { "BufReadPre", "BufNewFile" },
---   dependencies = {
---     { "antosha417/nvim-lsp-file-operations", config = true },
---     { "folke/lazydev.nvim", opts = {} },
---   },
---   config = function()
---     -- import cmp-nvim-lsp plugin
---     local cmp_nvim_lsp = require("cmp_nvim_lsp")
---
---     -- used to enable autocompletion (assign to every lsp server config)
---     local capabilities = cmp_nvim_lsp.default_capabilities()
---
---     vim.lsp.config("*", {
---       capabilities = capabilities,
---     })
---   end,
--- }
-
 -- lua/denys/plugins/lsp/lspconfig.lua
 return {
   "neovim/nvim-lspconfig",
@@ -32,7 +12,6 @@ return {
     local lspconfig = require("lspconfig")
     local mason_lspconfig = require("mason-lspconfig")
     local cmp_nvim_lsp = require("cmp_nvim_lsp")
-
     -- Signs & basic diagnostics UI
     local signs = { Error = "󰅙 ", Warn = " ", Hint = "󰌵 ", Info = " " }
     vim.diagnostic.config({
@@ -112,6 +91,17 @@ return {
       handlers = {
         function(server)
           lspconfig[server].setup({ capabilities = capabilities })
+        end,
+
+        ["clangd"] = function()
+          lspconfig.clangd.setup({
+            capabilities = capabilities,
+            cmd = {
+              "clangd",
+              "--background-index",
+              "--clang-tidy=false",
+            },
+          })
         end,
 
         -- C#
