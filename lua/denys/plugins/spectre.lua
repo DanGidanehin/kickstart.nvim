@@ -162,7 +162,7 @@ return {
     vim.keymap.set({ "n", "v" }, "<leader>sf", search_in_file, { desc = "Search in current file" })
     vim.keymap.set({ "n", "v" }, "<leader>qf", clear_path, { desc = "Clear path (global search)" })
     vim.keymap.set({ "n", "v", "i" }, "<C-q>", close_spectre, { desc = "Close Spectre" })
-    vim.keymap.set({ "n", "v" }, "<leader>sc", function()
+    vim.keymap.set({ "n", "v" }, "<leader>ic", function()
       spectre.change_options("ignore-case")
     end, { desc = "Toggle ignore case" })
   end,

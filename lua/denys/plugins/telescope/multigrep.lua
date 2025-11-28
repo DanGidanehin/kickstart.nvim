@@ -2,6 +2,7 @@ local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
 local make_entry = require("telescope.make_entry")
 local conf = require("telescope.config").values
+local actions = require("telescope.actions")
 
 local M = {}
 
@@ -18,13 +19,11 @@ local live_multigrep = function(opts)
       local pieces = vim.split(prompt, "  ")
       local args = { "rg" }
 
-      -- Add search pattern
       if pieces[1] and pieces[1] ~= "" then
         table.insert(args, "-e")
         table.insert(args, pieces[1])
       end
 
-      -- Add file glob filter
       if pieces[2] and pieces[2] ~= "" then
         table.insert(args, "-g")
         table.insert(args, pieces[2])
@@ -51,12 +50,28 @@ local live_multigrep = function(opts)
       finder = finder,
       previewer = conf.grep_previewer(opts),
       sorter = require("telescope.sorters").empty(),
+      attach_mappings = function(prompt_bufnr, map)
+        map("i", "<C-q>", function()
+          actions.send_selected_to_qflist(prompt_bufnr)
+          vim.cmd("copen")
+        end)
+        return true
+      end,
     })
     :find()
 end
 
 M.setup = function()
   vim.keymap.set("n", "<leader>fg", live_multigrep, { noremap = true, silent = true, desc = "Telescope: Multi Grep" })
+
+  vim.api.nvim_create_user_command("FindReplace", function(opts)
+    if #opts.fargs < 2 then
+      vim.notify("Usage: FindReplace <search> <replace>", vim.log.levels.WARN)
+      return
+    end
+    vim.api.nvim_command(string.format("cdo s/%s/%s/gc", opts.fargs[1], opts.fargs[2]))
+    vim.api.nvim_command("cfdo update")
+  end, { nargs = "*" })
 end
 
 return M
