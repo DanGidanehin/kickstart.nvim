@@ -58,7 +58,7 @@ return {
       actions = {
         open_file = {
           window_picker = { enable = false },
-          quit_on_open = false,
+          quit_on_open = true,
         },
       },
       filters = {
@@ -89,10 +89,6 @@ return {
       api.tree.open()
       vim.api.nvim_set_current_win(cur_win)
     end, { desc = "Open Nvim-Tree without focusing" })
-
-    -- Opens split with nvim-tree opened
-    keymap.set("n", "sv", ":NvimTreeOpen<CR><C-w>v", { noremap = true, silent = true })
-    keymap.set("n", "sh", ":NvimTreeOpen<CR><C-w>s", { noremap = true, silent = true })
 
     -- Other
     keymap.set("n", "<leader>ef", "<cmd>NvimTreeFindFileToggle<CR>", { desc = "Toggle file explorer on current file" })

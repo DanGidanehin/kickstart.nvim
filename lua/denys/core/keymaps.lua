@@ -29,15 +29,9 @@ keymap.set({ "n", "v" }, "<leader>tw", toggle_wrap, { desc = "Toggle wrap (lineb
 
 -- WINDOW MANAGEMENT
 -- Split Vertically
-keymap.set("n", "<leader>sv", function()
-  vim.cmd("vsplit")
-  require("nvim-tree.api").tree.open()
-end, { desc = "Vertical split + open NvimTree" })
+keymap.set({ "n", "v" }, "<leader>sv", vim.cmd.vsplit, { desc = "Vertical split" })
 -- Split Horizontally
-keymap.set("n", "<leader>sh", function()
-  vim.cmd("split")
-  require("nvim-tree.api").tree.open()
-end, { desc = "Horizontal split + open NvimTree" })
+keymap.set({ "n", "v" }, "<leader>sh", vim.cmd.hsplit, { desc = "Horizontal split" })
 
 -- Helper Functions
 keymap.set("n", "<leader>se", "<C-w>=", { desc = "Make splits equal size" })
