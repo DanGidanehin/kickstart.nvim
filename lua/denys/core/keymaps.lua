@@ -13,6 +13,9 @@ keymap.set("n", "<leader>pa", 'ggVG"+p', { desc = "Paste clipboard over entire b
 -- Clear search highlights
 keymap.set("n", "<leader>nh", ":nohl<CR>", { desc = "Clear search highlights" })
 
+-- Open file in browser
+vim.keymap.set("n", "<leader>oa", '<cmd>!open -a Arc "%"<cr>', { desc = "Open file in Arc" })
+
 -- Toggle File Wrap
 local function toggle_wrap()
   local was = vim.wo.wrap
