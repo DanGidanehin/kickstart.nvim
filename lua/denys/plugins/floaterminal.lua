@@ -10,14 +10,12 @@ local function create_floating_window(opts)
   local total_cols = vim.o.columns
   local total_lines = vim.o.lines
 
-  local padding_for_width = 5
-  local padding = 4
-  local spectre_gap = 2
+  local padding = 6
 
-  local width = (total_cols - padding_for_width * 2 - math.floor(total_cols * 0.30) - spectre_gap)
+  local width = opts.width or (total_cols + 2 - 2 * padding)
   local height = opts.height or math.floor(total_lines * 0.30)
 
-  local col = padding
+  local col = total_cols - width - padding
   local row = total_lines - height + 2
 
   local buf

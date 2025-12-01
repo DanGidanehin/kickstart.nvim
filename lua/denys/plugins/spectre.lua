@@ -18,11 +18,10 @@ return {
 
       -- Spectre window size
       local width = math.floor(total_cols * 0.30)
-      local height = math.floor(total_lines * 0.30)
+      local height = math.floor(total_lines * 0.57)
 
-      -- Align right side using same padding
       local col = total_cols - width - padding
-      local row = total_lines - height + 2
+      local row = 0
 
       local buf = vim.api.nvim_create_buf(false, true)
       state.win = vim.api.nvim_open_win(buf, true, {
@@ -38,6 +37,7 @@ return {
 
     -- Close Spectre window
     local function close_spectre()
+      vim.cmd.stopinsert()
       if state.win ~= -1 and vim.api.nvim_win_is_valid(state.win) then
         vim.api.nvim_win_close(state.win, true)
         state.win = -1
@@ -161,7 +161,7 @@ return {
     })
     vim.keymap.set({ "n", "v" }, "<leader>sf", search_in_file, { desc = "Search in current file" })
     vim.keymap.set({ "n", "v" }, "<leader>qf", clear_path, { desc = "Clear path (global search)" })
-    vim.keymap.set({ "n", "v", "i" }, "<C-q>", close_spectre, { desc = "Close Spectre" })
+    vim.keymap.set({ "n", "v", "i" }, "<C-d>", close_spectre, { desc = "Close Spectre" })
     vim.keymap.set({ "n", "v" }, "<leader>ic", function()
       spectre.change_options("ignore-case")
     end, { desc = "Toggle ignore case" })
