@@ -112,7 +112,7 @@ end
 vim.api.nvim_create_user_command("Floaterminal", open_or_focus_terminal, {})
 vim.keymap.set(
   { "n", "v", "i" },
-  "<C-n>",
+  "<C-t>",
   "<cmd>Floaterminal<cr>",
   { desc = "Open or focus floating terminal", silent = true }
 )

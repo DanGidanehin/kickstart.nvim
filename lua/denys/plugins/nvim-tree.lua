@@ -6,7 +6,7 @@ return {
     local api = require("nvim-tree.api")
     local keymap = vim.keymap
 
-    -- This function is defining custom keybindings for nvim-tree window
+    -- Standard on_attach function
     local function on_attach(bufnr)
       local function opts(desc)
         return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
@@ -15,10 +15,7 @@ return {
       -- Navigation
       keymap.set("n", "<CR>", api.node.open.edit, opts("Open File or Folder"))
       keymap.set("n", "h", api.node.navigate.parent_close, opts("Close Folder"))
-
-      -- Go up one folder
       keymap.set("n", "<S-Tab>", api.tree.change_root_to_parent, opts("Go Up One Directory"))
-      -- Focus folder as new root
       keymap.set("n", "<Tab>", api.tree.change_root_to_node, opts("Focus Folder as Root"))
 
       keymap.set("n", "R", api.tree.reload, opts("Refresh"))
@@ -40,38 +37,20 @@ return {
       renderer = {
         indent_markers = { enable = true },
         icons = {
-          glyphs = {
-            folder = {
-              -- arrow_closed = "",
-              -- arrow_open = "",
-              -- arrow_closed = "",
-              -- arrow_open   = "",
-              arrow_closed = "",
-              arrow_open = "",
-            },
-          },
+          glyphs = { folder = { arrow_closed = "", arrow_open = "" } },
         },
         root_folder_label = function(path)
           return vim.fn.fnamemodify(path, ":t")
         end,
       },
       actions = {
-        open_file = {
-          window_picker = { enable = false },
-          quit_on_open = true,
-        },
+        open_file = { window_picker = { enable = false }, quit_on_open = true },
       },
-      filters = {
-        custom = { ".DS_Store" },
-      },
-      git = {
-        enable = false,
-        ignore = false,
-      },
+      filters = { custom = { ".DS_Store" } },
+      git = { enable = false, ignore = false },
     })
 
     -- SHORTCUTS
-    -- Open or focus nvim-tree
     keymap.set("n", "<leader>ee", function()
       if not api.tree.is_visible() then
         api.tree.open()
@@ -80,7 +59,6 @@ return {
       end
     end, { desc = "Open or focus file explorer" })
 
-    -- Open nvim-tree without focusing on it
     keymap.set("n", "<leader>eo", function()
       if api.tree.is_visible() then
         return
@@ -90,9 +68,48 @@ return {
       vim.api.nvim_set_current_win(cur_win)
     end, { desc = "Open Nvim-Tree without focusing" })
 
-    -- Other
     keymap.set("n", "<leader>ef", "<cmd>NvimTreeFindFileToggle<CR>", { desc = "Toggle file explorer on current file" })
     keymap.set("n", "<leader>er", "<cmd>NvimTreeRefresh<CR>", { desc = "Refresh file explorer" })
     keymap.set("n", "<leader>EE", "<cmd>NvimTreeToggle<CR>", { desc = "Close file explorer" })
+
+    keymap.set("n", "<C-n>", function()
+      api.tree.open()
+      api.tree.find_file({ open = true, focus = true })
+
+      -- Get the current node (directory) to know where to create the file
+      local node = api.tree.get_node_under_cursor()
+      local base_path = node.absolute_path
+      if node.type ~= "directory" then
+        base_path = vim.fn.fnamemodify(base_path, ":h")
+      end
+
+      vim.ui.input({ prompt = "Create file: ", completion = "file" }, function(input)
+        if not input or input == "" then
+          api.tree.close()
+          return
+        end
+
+        local new_file_path = base_path .. "/" .. input
+
+        if input:sub(-1) == "/" then
+          vim.fn.mkdir(new_file_path, "p")
+        else
+          local file = io.open(new_file_path, "r")
+          if file then
+            file:close()
+            vim.notify("File already exists", vim.log.levels.WARN)
+          else
+            file = io.open(new_file_path, "w")
+            if file then
+              file:close()
+              vim.cmd("edit " .. vim.fn.fnameescape(new_file_path))
+              api.tree.close()
+            else
+              vim.notify("Could not create file", vim.log.levels.ERROR)
+            end
+          end
+        end
+      end)
+    end, { desc = "Create New File and Edit" })
   end,
 }
