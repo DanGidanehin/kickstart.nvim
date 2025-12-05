@@ -7,16 +7,18 @@ return {
     local treesitter = require("nvim-treesitter.configs")
 
     -- configure treesitter
-    treesitter.setup({ -- enable syntax highlighting
+    treesitter.setup({
+      modules = {},
+      sync_install = false,
+      auto_install = true,
+      ignore_install = {},
+
+      -- enable syntax highlighting
       highlight = {
         enable = true,
       },
       -- enable indentation
       indent = { enable = true },
-      -- enable autotag
-      autotag = {
-        enable = true,
-      },
       -- ensure these language parsers are installed
       ensure_installed = {
         "json",
@@ -39,6 +41,9 @@ return {
         "query",
         "vimdoc",
         "c",
+        -- ADDED FOR YOUR ROADMAP:
+        "java",
+        "kotlin",
       },
       incremental_selection = {
         enable = true,

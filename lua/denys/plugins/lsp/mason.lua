@@ -52,12 +52,9 @@ return {
         "black",
         "clang-format",
         "csharpier",
-        "rustfmt",
         "sqlfluff",
-        "ktlint",
-        -- Removed "dotnet-sdk"
-
         -- Linters
+        "ktlint",
         "pylint",
         "eslint_d",
         "shellcheck",
