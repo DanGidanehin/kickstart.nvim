@@ -3,13 +3,12 @@ local state = {
   prev_win = -1,
 }
 
--- Create (or reuse) a floating window for a given buffer
+-- 1. Helper: Create the floating window
 local function create_floating_window(opts)
   opts = opts or {}
 
   local total_cols = vim.o.columns
   local total_lines = vim.o.lines
-
   local padding = 6
 
   local width = opts.width or (total_cols + 2 - 2 * padding)
@@ -38,7 +37,7 @@ local function create_floating_window(opts)
   return { buf = buf, win = win }
 end
 
--- Ensure buffer is a terminal; reuse the same terminal buffer across opens
+-- 2. Helper: Ensure buffer is a terminal
 local function ensure_terminal(buf)
   if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buftype == "terminal" then
     return buf
@@ -47,7 +46,7 @@ local function ensure_terminal(buf)
   return vim.api.nvim_get_current_buf()
 end
 
--- Close ONLY the floating window (preserve buffer & terminal job)
+-- 3. Action: Close Window (Hide)
 local function close_floating_window()
   if state.floating.win ~= -1 and vim.api.nvim_win_is_valid(state.floating.win) then
     vim.api.nvim_win_close(state.floating.win, true)
@@ -55,38 +54,35 @@ local function close_floating_window()
   end
 end
 
--- Focus back to the window you had before opening the float
+-- 4. Action: Focus Previous Window
 local function focus_previous_window()
   if state.prev_win ~= -1 and vim.api.nvim_win_is_valid(state.prev_win) then
     vim.api.nvim_set_current_win(state.prev_win)
   end
 end
 
--- Buffer-local mappings for the floating terminal
-local function set_float_mappings(buf)
-  -- Esc (in terminal mode) → focus previous window (do not close or clear buffer)
-  vim.keymap.set("t", "<esc>", function()
-    focus_previous_window()
-  end, { buffer = buf, nowait = true, silent = true, desc = "Focus previous window" })
-
-  -- Optional: also allow in normal/insert if you switch modes inside the term
-  vim.keymap.set("n", "<esc>", focus_previous_window, { buffer = buf, nowait = true, silent = true })
-  vim.keymap.set("i", "<esc>", focus_previous_window, { buffer = buf, nowait = true, silent = true })
-
-  -- Keep your close shortcut
-  for _, mode in ipairs({ "t", "i", "n" }) do
-    vim.keymap.set(
-      mode,
-      "<C-x>",
-      close_floating_window,
-      { buffer = buf, nowait = true, silent = true, desc = "Close floating terminal window" }
-    )
+-- 5. Action: Kill Terminal (Internal)
+local function clear_terminal()
+  if state.floating.win ~= -1 and vim.api.nvim_win_is_valid(state.floating.win) then
+    vim.api.nvim_win_close(state.floating.win, true)
+    state.floating.win = -1
   end
+
+  if state.floating.buf ~= -1 and vim.api.nvim_buf_is_valid(state.floating.buf) then
+    vim.api.nvim_buf_delete(state.floating.buf, { force = true })
+  end
+
+  state.floating.buf = -1
 end
 
--- Open or focus existing terminal window (remember previous win for <Esc>)
+-- 6. Setup Buffer Mappings
+local function set_float_mappings(buf)
+  vim.keymap.set("t", "<esc>", focus_previous_window, { buffer = buf, nowait = true, silent = true })
+  vim.keymap.set("t", "<C-q>", close_floating_window, { buffer = buf, nowait = true, silent = true })
+end
+
+-- 7. Main Function: Open or Focus
 local function open_or_focus_terminal()
-  -- remember where to return on <Esc> before focusing/opening the float
   state.prev_win = vim.api.nvim_get_current_win()
 
   if state.floating.win ~= -1 and vim.api.nvim_win_is_valid(state.floating.win) then
@@ -95,33 +91,36 @@ local function open_or_focus_terminal()
     return
   end
 
-  -- (Re)create window, reusing previous buffer if it exists
   state.floating = create_floating_window({ buf = state.floating.buf })
-
-  -- Make sure buffer is a terminal (reuse same job if possible)
   state.floating.buf = ensure_terminal(state.floating.buf)
-
-  -- Attach buffer-local mappings
   set_float_mappings(state.floating.buf)
-
-  -- Enter terminal/insert mode
   vim.cmd("startinsert")
 end
 
--- :Floaterminal command and keybindings
+-- 8. Action: Reset (Clear + Reopen)
+local function reset_terminal()
+  clear_terminal() -- Kill the buffer
+  open_or_focus_terminal() -- Open a new one immediately
+  print("Terminal Reset!")
+end
+
+-- === COMMANDS & KEYBINDINGS ===
+
 vim.api.nvim_create_user_command("Floaterminal", open_or_focus_terminal, {})
+vim.api.nvim_create_user_command("ClearTerminal", clear_terminal, {})
+
+-- <C-t>: Toggle (Open/Focus)
 vim.keymap.set(
-  { "n", "v", "i" },
+  { "n", "v", "i", "t" },
   "<C-t>",
-  "<cmd>Floaterminal<cr>",
-  { desc = "Open or focus floating terminal", silent = true }
-)
-vim.keymap.set(
-  { "n", "v", "i" },
-  "<C-x>",
-  close_floating_window,
-  { desc = "Close floating terminal window", silent = true }
+  open_or_focus_terminal,
+  { desc = "Toggle floating terminal", silent = true }
 )
 
--- Valid empty spec for lazy.nvim
+-- <C-q>: Hide Window (Keep job running)
+vim.keymap.set({ "n", "v", "i", "t" }, "<C-q>", close_floating_window, { desc = "Hide terminal window", silent = true })
+
+-- <C-x>: Reset (Kill job + Reopen fresh)
+vim.keymap.set({ "n", "v", "i", "t" }, "<C-x>", reset_terminal, { desc = "Reset floating terminal", silent = true })
+
 return {}
