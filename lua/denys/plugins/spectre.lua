@@ -6,7 +6,7 @@ return {
     local state = {
       win = -1,
       has_path = false,
-      prev_win = -1, -- remember where to return on <Esc>
+      prev_win = -1,
     }
 
     -- Create floating window for Spectre
@@ -14,9 +14,8 @@ return {
       local total_cols = vim.o.columns
       local total_lines = vim.o.lines
 
-      local padding = 6
-
       -- Spectre window size
+      local padding = 6
       local width = math.floor(total_cols * 0.30)
       local height = math.floor(total_lines * 0.57)
 

@@ -1,75 +1,60 @@
--- lua/plugins/comment.lua
 return {
   "numToStr/Comment.nvim",
-  event = { "BufReadPre", "BufNewFile" },
+  lazy = false,
   dependencies = {
-    "JoosepAlviste/nvim-ts-context-commentstring",
-    -- Optional but recommended to get proper TSX/CSS/HTML context:
-    -- "nvim-treesitter/nvim-treesitter",
+    {
+      "JoosepAlviste/nvim-ts-context-commentstring",
+      event = "VeryLazy",
+    },
   },
+
   config = function()
-    -- ts-context-commentstring: let Comment.nvim drive updates (no autocmd)
+    -- Setup Context Commentstring (For React/Vue/Svelte support)
     vim.g.skip_ts_context_commentstring_module = true
+    ---@diagnostic disable: missing-fields
     require("ts_context_commentstring").setup({
       enable_autocmd = false,
     })
 
-    -- Comment.nvim + integration hook
-    local ts_integration = require("ts_context_commentstring.integrations.comment_nvim")
-    require("Comment").setup({
-      mappings = false, -- we'll define our own keymaps below
-      pre_hook = ts_integration.create_pre_hook(),
+    -- Setup Comment.nvim
+    local comment = require("Comment")
+    local api = require("Comment.api")
+
+    comment.setup({
+      padding = true,
+      sticky = true,
+
+      -- Disable ALL default mappings (gcc, gbc, etc.)
+      mappings = {
+        basic = false,
+        extra = false,
+      },
+
+      -- Enable context awareness
+      pre_hook = require("ts_context_commentstring.integrations.comment_nvim").create_pre_hook(),
     })
 
-    -- Keymaps
-    local api = require("Comment.api")
-    local keymap = vim.keymap
-    local esc = vim.api.nvim_replace_termcodes("<ESC>", true, false, true)
+    -- Custom Simplified Keymaps
+    local keymap = vim.keymap.set
 
-    -- Leader mappings (filetype-aware via ts-context-commentstring)
-    -- Normal mode
-    keymap.set("n", "<leader>kc", function()
-      api.toggle.linewise.current()
-    end, { desc = "Comment current line (ft-aware)" })
+    -- Toggle Line Comment
+    keymap("n", "<leader>kc", api.toggle.linewise.current, { desc = "Toggle line comment" })
+    keymap("x", "<leader>kc", "<Plug>(comment_toggle_linewise_visual)", { desc = "Toggle line comment" })
+    -- Toggle Block Comment
+    keymap("n", "<leader>kb", api.toggle.blockwise.current, { desc = "Toggle block comment" })
+    keymap("x", "<leader>kb", "<Plug>(comment_toggle_blockwise_visual)", { desc = "Toggle block comment" })
 
-    keymap.set("n", "<leader>kC", function()
-      api.toggle.blockwise.current()
-    end, { desc = "Block-comment current line (ft-aware)" })
-
-    -- Use same toggle for uncomment
-    keymap.set("n", "<leader>ku", function()
-      api.toggle.linewise.current()
-    end, { desc = "Un/Comment current line (ft-aware)" })
-
-    -- Visual mode (selection)
-    keymap.set("x", "<leader>kc", function()
-      vim.api.nvim_feedkeys(esc, "nx", false)
-      api.toggle.linewise(vim.fn.visualmode())
-    end, { desc = "Comment selection (ft-aware)" })
-
-    keymap.set("x", "<leader>kC", function()
-      vim.api.nvim_feedkeys(esc, "nx", false)
-      api.toggle.blockwise(vim.fn.visualmode())
-    end, { desc = "Block-comment selection (ft-aware)" })
-
-    keymap.set("x", "<leader>ku", function()
-      vim.api.nvim_feedkeys(esc, "nx", false)
-      api.toggle.linewise(vim.fn.visualmode())
-    end, { desc = "Un/Comment selection (ft-aware)" })
-
-    -- Familiar defaults (since mappings=false above disables Comment.nvim defaults)
-    -- Feel free to remove if you only want the <leader> mappings.
-    keymap.set("n", "gcc", function()
-      api.toggle.linewise.current()
-    end, { desc = "Comment line" })
-    keymap.set("n", "gbc", function()
-      api.toggle.blockwise.current()
-    end, { desc = "Block comment line" })
-    keymap.set("x", "gc", function()
-      api.toggle.linewise(vim.fn.visualmode())
-    end, { desc = "Comment selection" })
-    keymap.set("x", "gb", function()
-      api.toggle.blockwise(vim.fn.visualmode())
-    end, { desc = "Block comment selection" })
+    -- Add Comment Below
+    keymap("n", "<leader>ko", function()
+      api.insert.linewise.below()
+    end, { desc = "Comment line below" })
+    -- Add Comment Above
+    keymap("n", "<leader>kO", function()
+      api.insert.linewise.above()
+    end, { desc = "Comment line above" })
+    -- Add Comment at End of Line
+    keymap("n", "<leader>ke", function()
+      api.insert.linewise.eol()
+    end, { desc = "Comment end of line" })
   end,
 }

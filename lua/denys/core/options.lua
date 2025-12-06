@@ -40,7 +40,7 @@ opt.splitbelow = true -- split horizontal window to the bottom
 opt.swapfile = false
 
 -- tabs line
-opt.showtabline = 1
+opt.showtabline = 2
 
 -- turn spell check off
 opt.spell = false

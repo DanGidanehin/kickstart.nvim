@@ -52,40 +52,29 @@ return {
 
     -- SHORTCUTS
     keymap.set("n", "<leader>ee", function()
-      if not api.tree.is_visible() then
-        api.tree.open()
-      else
-        api.tree.focus()
-      end
-    end, { desc = "Open or focus file explorer" })
+      api.tree.find_file({ open = true, focus = true })
+    end, { desc = "Focus explorer on current file" })
 
-    keymap.set("n", "<leader>eo", function()
-      if api.tree.is_visible() then
-        return
-      end
-      local cur_win = vim.api.nvim_get_current_win()
-      api.tree.open()
-      vim.api.nvim_set_current_win(cur_win)
-    end, { desc = "Open Nvim-Tree without focusing" })
-
-    keymap.set("n", "<leader>ef", "<cmd>NvimTreeFindFileToggle<CR>", { desc = "Toggle file explorer on current file" })
     keymap.set("n", "<leader>er", "<cmd>NvimTreeRefresh<CR>", { desc = "Refresh file explorer" })
-    keymap.set("n", "<leader>EE", "<cmd>NvimTreeToggle<CR>", { desc = "Close file explorer" })
+    keymap.set("n", "<leader>ex", "<cmd>NvimTreeToggle<CR>", { desc = "Close file explorer" })
 
     keymap.set("n", "<C-n>", function()
-      api.tree.open()
-      api.tree.find_file({ open = true, focus = true })
+      local current_buf = vim.api.nvim_buf_get_name(0)
+      local base_path
 
-      -- Get the current node (directory) to know where to create the file
-      local node = api.tree.get_node_under_cursor()
-      local base_path = node.absolute_path
-      if node.type ~= "directory" then
-        base_path = vim.fn.fnamemodify(base_path, ":h")
+      if current_buf == "" then
+        base_path = vim.fn.getcwd()
+      else
+        base_path = vim.fn.fnamemodify(current_buf, ":h")
       end
 
-      vim.ui.input({ prompt = "Create file: ", completion = "file" }, function(input)
+      api.tree.find_file({ open = true, focus = true })
+
+      vim.ui.input({
+        prompt = "Create file in " .. vim.fn.fnamemodify(base_path, ":t") .. "/: ",
+        completion = "file",
+      }, function(input)
         if not input or input == "" then
-          api.tree.close()
           return
         end
 
@@ -93,6 +82,7 @@ return {
 
         if input:sub(-1) == "/" then
           vim.fn.mkdir(new_file_path, "p")
+          api.tree.reload()
         else
           local file = io.open(new_file_path, "r")
           if file then
@@ -103,13 +93,13 @@ return {
             if file then
               file:close()
               vim.cmd("edit " .. vim.fn.fnameescape(new_file_path))
-              api.tree.close()
+              api.tree.find_file({ open = true, focus = true })
             else
               vim.notify("Could not create file", vim.log.levels.ERROR)
             end
           end
         end
       end)
-    end, { desc = "Create New File and Edit" })
+    end, { desc = "Create new file in current folder" })
   end,
 }

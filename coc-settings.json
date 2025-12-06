@@ -1,16 +1,20 @@
 {
-  "codeLens.enable": true,
-  "codeLens.position": "eol",
-  "inlayHint.enable": true,
+  "codeLens.enable": false,
+  "inlayHint.enable": false,
 
-  "typescript.referencesCodeLens.enabled": true,
-  "typescript.implementationsCodeLens.enabled": true,
-  "javascript.referencesCodeLens.enabled": true,
+  "typescript.referencesCodeLens.enabled": false,
+  "typescript.implementationsCodeLens.enabled": false,
+  "javascript.referencesCodeLens.enabled": false,
 
-  "java.referencesCodeLens.enabled": true,
-  "java.implementationsCodeLens.enabled": true,
+  "java.referencesCodeLens.enabled": false,
+  "java.implementationsCodeLens.enabled": false,
 
   "snippets.ultisnips.pythonPrompt": false,
 
-  "Lua.diagnostics.globals": ["vim"]
+  "Lua.diagnostics.globals": ["vim"],
+
+  "suggest.formatItems": ["abbr", "kind"],
+  "suggest.detailField": "abbr",
+  "suggest.removeDuplicateItems": true,
+  "diagnostic.checkCurrentLine": true
 }

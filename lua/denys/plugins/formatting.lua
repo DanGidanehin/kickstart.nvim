@@ -1,4 +1,3 @@
--- lua/denys/plugins/formatting.lua
 return {
   "stevearc/conform.nvim",
   event = { "BufReadPre", "BufNewFile" },
@@ -7,47 +6,67 @@ return {
 
     conform.setup({
       formatters_by_ft = {
-        -- C / C++
-        c = { "clang-format" },
-        cpp = { "clang-format" },
-        -- C#
-        cs = { "csharpier" },
-        -- Python
-        python = { "isort", "black" },
-        -- JS/TS/General Web
+        -- Web development
         javascript = { "prettier" },
         typescript = { "prettier" },
         javascriptreact = { "prettier" },
         typescriptreact = { "prettier" },
-        svelte = { "prettier" },
         css = { "prettier" },
         html = { "prettier" },
         json = { "prettier" },
         yaml = { "prettier" },
         markdown = { "prettier" },
         graphql = { "prettier" },
-        liquid = { "prettier" },
-        -- Rust
-        rust = { "rust_analyzer" },
-        -- SQL
-        sql = { "sqlfluff" },
+
         -- Lua
         lua = { "stylua" },
+
+        -- Python
+        python = { "isort", "black" },
+
+        -- Go
+        go = { "gofmt", "goimports" },
+
+        -- Rust
+        rust = { "rustfmt" },
+
+        -- Java (Added)
+        java = { "google-java-format" },
+
+        -- Shell
+        sh = { "shfmt" },
+        bash = { "shfmt" },
+        zsh = { "shfmt" },
+
+        -- TOML
+        toml = { "taplo" },
+
+        -- Use the "*" filetype to run formatters on all filetypes
+        ["*"] = { "trim_whitespace" },
       },
+      -- Set default options
+      default_format_opts = {
+        lsp_format = "fallback",
+      },
+      -- Set up format-on-save (Enabled)
       format_on_save = {
-        lsp_fallback = true, -- ESSENTIAL for Java, Kotlin, and now Swift
-        async = false,
-        timeout_ms = 3000,
+        -- These options will be passed to conform.format()
+        timeout_ms = 500,
+        lsp_format = "fallback",
+      },
+      -- Customize formatters
+      formatters = {
+        shfmt = {
+          prepend_args = { "-i", "2" }, -- 2 spaces indentation
+        },
       },
     })
 
-    local keymap = vim.keymap
-
-    keymap.set({ "n", "v" }, "<leader>mp", function()
+    vim.keymap.set({ "n", "v" }, "<leader>mp", function()
       conform.format({
-        lsp_fallback = true,
+        lsp_format = "fallback",
         async = false,
-        timeout_ms = 1000,
+        timeout_ms = 500,
       })
     end, { desc = "Format file or range (in visual mode)" })
   end,

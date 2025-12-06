@@ -5,10 +5,9 @@ return {
   config = function()
     local todo_comments = require("todo-comments")
     -- TODO: add better comments here
-    -- HACK: 
-    -- BUG: 
-    -- set keymaps
-    local keymap = vim.keymap -- for conciseness
+    -- HACK:
+    -- BUG:
+    local keymap = vim.keymap
 
     keymap.set("n", "]t", function()
       todo_comments.jump_next()

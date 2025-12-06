@@ -1,5 +1,7 @@
 -- lua/denys/plugins/lsp/lspconfig.lua
 return {
+  enabled = false,
+
   "neovim/nvim-lspconfig",
   event = { "BufReadPre", "BufNewFile" },
   dependencies = {

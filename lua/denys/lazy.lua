@@ -9,7 +9,7 @@ if not uv.fs_stat(lazypath) then
     "clone",
     "--filter=blob:none",
     "https://github.com/folke/lazy.nvim.git",
-    "--branch=stable", -- latest stable release
+    "--branch=stable",
     lazypath,
   })
 end
@@ -17,13 +17,17 @@ vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
   { import = "denys.plugins" },
-  -- { import = "denys.plugins.lsp" }
+  { import = "denys.plugins.lsp" },
 }, {
   checker = {
     enabled = true,
     notify = false,
   },
+  ui = {
+    border = "rounded",
+  },
   change_detection = {
+    enabled = true,
     notify = false,
   },
 })

@@ -1,5 +1,6 @@
 -- lua/denys/plugins/lsp/mason.lua
 return {
+  enabled = false,
   {
     "williamboman/mason-lspconfig.nvim",
     opts = {

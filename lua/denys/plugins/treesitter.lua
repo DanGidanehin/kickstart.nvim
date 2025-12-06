@@ -41,7 +41,6 @@ return {
         "query",
         "vimdoc",
         "c",
-        -- ADDED FOR YOUR ROADMAP:
         "java",
         "kotlin",
       },

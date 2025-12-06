@@ -3,67 +3,10 @@ return {
   dependencies = { "nvim-tree/nvim-web-devicons" },
   config = function()
     local lualine = require("lualine")
-
-    local colors = {
-      blue = "#65D1FF",
-      green = "#3EFFDC",
-      violet = "#FF61EF",
-      yellow = "#FFDA7B",
-      red = "#FF4A4A",
-      fg = "#c3ccdc",
-      bg = "#112638",
-      inactive_bg = "#2c3043",
-      semilightgray = "#8b8fa9",
-    }
-
-    local my_lualine_theme = {
-      normal = {
-        a = { bg = colors.blue, fg = colors.bg, gui = "bold" },
-        b = { bg = colors.bg, fg = colors.fg },
-        c = { bg = colors.bg, fg = colors.fg },
-      },
-      insert = {
-        a = { bg = colors.green, fg = colors.bg, gui = "bold" },
-        b = { bg = colors.bg, fg = colors.fg },
-        c = { bg = colors.bg, fg = colors.fg },
-      },
-      visual = {
-        a = { bg = colors.violet, fg = colors.bg, gui = "bold" },
-        b = { bg = colors.bg, fg = colors.fg },
-        c = { bg = colors.bg, fg = colors.fg },
-      },
-      command = {
-        a = { bg = colors.yellow, fg = colors.bg, gui = "bold" },
-        b = { bg = colors.bg, fg = colors.fg },
-        c = { bg = colors.bg, fg = colors.fg },
-      },
-      replace = {
-        a = { bg = colors.red, fg = colors.bg, gui = "bold" },
-        b = { bg = colors.bg, fg = colors.fg },
-        c = { bg = colors.bg, fg = colors.fg },
-      },
-      inactive = {
-        a = { bg = colors.inactive_bg, fg = colors.semilightgray, gui = "bold" },
-        b = { bg = colors.inactive_bg, fg = colors.semilightgray },
-        c = { bg = colors.inactive_bg, fg = colors.semilightgray },
-      },
-    }
-
-    local function short_path()
-      local path = vim.fn.expand("%:p")
-      if path == "" then
-        return ""
-      end
-      local parts = vim.split(path, "/")
-      local count = #parts
-      local start = math.max(count - 0, 1)
-      local short = table.concat(vim.list_slice(parts, start, count), "/")
-      return short
-    end
-
+    local custom_default = require("denys.plugins.lualine-theme.default")
     lualine.setup({
       options = {
-        theme = my_lualine_theme,
+        theme = custom_default,
         section_separators = { left = " ", right = "" },
         component_separators = { left = "❘", right = "❘" },
         disabled_filetypes = {
@@ -79,18 +22,44 @@ return {
             "undotree",
           },
         },
+        ignore_focus = {},
+        always_divide_middle = true,
+        globalstatus = true,
+        refresh = {
+          statusline = 1000,
+          tabline = 1000,
+          winbar = 1000,
+        },
       },
       sections = {
         lualine_a = {
+          "mode",
+        },
+
+        lualine_b = {},
+        lualine_c = {
+          "progress",
+          "filename",
           {
-            function()
-              local branch = vim.b.gitsigns_head
-              if not branch or branch == "" then
-                return "󰊢 Git"
-              end
-              return " " .. branch
-            end,
+            "diagnostics",
+            sources = { "nvim_diagnostic", "nvim_lsp" },
+            sections = { "error", "warn", "info", "hint" },
+            diagnostics_color = {
+              error = "DiagnosticError",
+              warn = "DiagnosticWarn",
+              info = "DiagnosticInfo",
+              hint = "DiagnosticHint",
+            },
+            symbols = { error = "󰅙 ", warn = " ", info = " ", hint = "󰌵 " },
+            colored = true,
+            update_in_insert = false,
+            always_visible = false,
           },
+        },
+
+        lualine_x = {},
+
+        lualine_y = {
           {
             "diff",
             colored = false,
@@ -100,25 +69,18 @@ return {
             end,
           },
         },
-        lualine_b = {},
-        lualine_c = {
-          { short_path, icon = "", separator = "" },
+
+        lualine_z = {
           {
-            "diagnostics",
-            sources = { "nvim_diagnostic" },
-            padding = { left = 0, right = 0 },
-            separator = "",
-            symbols = { error = "󰅙 ", warn = " ", info = " " },
+            function()
+              local branch = vim.b.gitsigns_head
+              if not branch or branch == "" then
+                return "󰊢 Git"
+              end
+              return " " .. branch
+            end,
           },
         },
-
-        lualine_x = {
-          { "progress" },
-        },
-
-        lualine_y = {},
-
-        lualine_z = { "mode" },
       },
     })
   end,
