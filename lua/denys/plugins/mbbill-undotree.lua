@@ -45,7 +45,7 @@ return {
       end
     end
 
-    vim.keymap.set("n", "<leader>ut", undotree_focus_or_open, { desc = "Open/Focus Undotree" })
+    vim.keymap.set("n", "<leader>uu", undotree_focus_or_open, { desc = "Open/Focus Undotree" })
     vim.keymap.set("n", "<leader>ux", vim.cmd.UndotreeHide, { desc = "Close Undotree" })
   end,
 }
