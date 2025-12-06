@@ -15,7 +15,10 @@ if not uv.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-require("lazy").setup({ { import = "denys.plugins" }, { import = "denys.plugins.lsp" } }, {
+require("lazy").setup({
+  { import = "denys.plugins" },
+  -- { import = "denys.plugins.lsp" }
+}, {
   checker = {
     enabled = true,
     notify = false,

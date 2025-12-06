@@ -1,0 +1,16 @@
+{
+  "codeLens.enable": true,
+  "codeLens.position": "eol",
+  "inlayHint.enable": true,
+
+  "typescript.referencesCodeLens.enabled": true,
+  "typescript.implementationsCodeLens.enabled": true,
+  "javascript.referencesCodeLens.enabled": true,
+
+  "java.referencesCodeLens.enabled": true,
+  "java.implementationsCodeLens.enabled": true,
+
+  "snippets.ultisnips.pythonPrompt": false,
+
+  "Lua.diagnostics.globals": ["vim"]
+}
